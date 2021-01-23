@@ -1,12 +1,12 @@
 terraform {
   backend "s3" {
     # Replace this with your bucket name!
-    bucket         = "josh-s3-terraform-state"
+    bucket         = "josh-state-files"
     key            = "stage/data-stores/mysql/terraform.tfstate"
     region         = "us-east-2"
 
     # Replace this with your DynamoDB table name!
-    dynamodb_table = "terraform-up-and-running-locks"
+    dynamodb_table = "josh-state-locks"
     encrypt        = true
   }
 }

@@ -1,3 +1,16 @@
+terraform {
+  backend "s3" {
+    # Replace this with your bucket name!
+    bucket         = "josh-state-files"
+    key            = "global/s3initials3/terraform.tfstate"
+    region         = "us-east-2"
+
+    # Replace this with your DynamoDB table name!
+    dynamodb_table = "josh-state-locks"
+    encrypt        = true
+  }
+}
+
 provider "aws" {
   region = "us-east-2"
 }

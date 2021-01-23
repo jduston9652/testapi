@@ -1,16 +1,16 @@
 terraform {
   backend "s3" {
     # Replace this with your bucket name!
-    bucket         = "josh-s3-terraform-state"
+    bucket         = "josh-state-files"
     key            = "stage/services/webserver-cluster/terraform.tfstate"
     region         = "us-east-2"
 
     # Replace this with your DynamoDB table name!
-    dynamodb_table = "terraform-up-and-running-locks"
+    dynamodb_table = "josh-state-locks"
     encrypt        = true
   }
 }
-    
+
     resource "aws_instance" "example" {
         ami = "ami-0a91cd140a1fc148a"
         instance_type = "t2.micro"
@@ -81,7 +81,7 @@ data "terraform_remote_state" "db" {
   backend = "s3"
 
   config = {
-    bucket = "josh-s3-terraform-state"
+    bucket = "josh-state-files"
     key    = "stage/data-stores/mysql/terraform.tfstate"
     region = "us-east-2"
   }
