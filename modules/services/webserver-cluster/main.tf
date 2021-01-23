@@ -11,6 +11,14 @@ terraform {
   }
 }
 
+locals {
+  http_port    = 80
+  any_port     = 0
+  any_protocol = "-1"
+  tcp_protocol = "tcp"
+  all_ips      = ["0.0.0.0/0"]
+}
+
     resource "aws_instance" "example" {
         ami = "ami-0a91cd140a1fc148a"
         instance_type = "t2.micro"
@@ -33,14 +41,14 @@ resource "aws_security_group" "instance" {
   ingress {
     from_port   = var.server_port
     to_port     = var.server_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    protocol    = local.tcp_protocol
+    cidr_blocks = local.all_ips
   }
 }
 
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-0a91cd140a1fc148a"
-  instance_type   = "t2.micro"
+  instance_type   = var.instance_type
   security_groups = [aws_security_group.instance.id]
               
         # Required when using a launch configuration with an auto scaling group.
@@ -58,12 +66,12 @@ resource "aws_autoscaling_group" "example" {
     target_group_arns = [aws_lb_target_group.asg.arn]
     health_check_type = "EC2"
 
-  min_size = 2
-  max_size = 10
+  min_size = var.min_size
+  max_size = var.max_size
 
   tag {
     key                 = "Name"
-    value               = "${var.cluster_name}"
+    value               = var.cluster_name
     propagate_at_launch = true
     }
 }
@@ -87,7 +95,7 @@ data "terraform_remote_state" "db" {
 }
 
 resource "aws_lb" "example" {
-  name               = "${var.cluster_name}"
+  name               = var.cluster_name
   load_balancer_type = "application"
   subnets            = data.aws_subnet_ids.default.ids
   security_groups    = [aws_security_group.alb.id]
@@ -95,7 +103,7 @@ resource "aws_lb" "example" {
 
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.example.arn
-  port              = 80
+  port              = local.http_port
   protocol          = "HTTP"
 
   # By default, return a simple 404 page
@@ -115,23 +123,23 @@ resource "aws_security_group" "alb" {
 
   # Allow inbound HTTP requests
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = local.http_port
+    to_port     = local.http_port
+    protocol    = local.tcp_protocol
+    cidr_blocks = local.all_ips
   }
 
   # Allow all outbound requests
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = local.any.port
+    to_port     = local.any.port
+    protocol    = local.any_protocol
+    cidr_blocks = loal.all_ips
   }
 }
 
 resource "aws_lb_target_group" "asg" {
-  name     = "${var.cluster_name}"
+  name     = var.cluster_name
   port     = var.server_port
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
