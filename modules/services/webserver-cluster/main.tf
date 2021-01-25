@@ -131,10 +131,10 @@ resource "aws_security_group" "alb" {
 
   # Allow all outbound requests
   egress {
-    from_port   = local.any.port
-    to_port     = local.any.port
+    from_port   = local.any_port
+    to_port     = local.any_port
     protocol    = local.any_protocol
-    cidr_blocks = loal.all_ips
+    cidr_blocks = local.all_ips
   }
 }
 
